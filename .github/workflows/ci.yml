@@ -103,7 +103,7 @@ jobs:
   deploy:
     name: Deploy Affected Apps
     runs-on: ubuntu-latest
-    needs: [build]
+    needs: [build, detect-affected]
     # ✅ Solo ejecuta este job si el build terminó con éxito
     # 🔒 Esto previene errores cuando no hay apps afectadas o el build falló
     if: needs.build.result == 'success'
