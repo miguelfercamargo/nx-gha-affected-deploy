@@ -137,7 +137,7 @@ jobs:
           if [[ "${{ matrix.app }}" == "app-a" ]]; then
             echo "🌐 Ambiente de despliegue: $DEPLOY_ENV_APP_A"
             echo "📦 Desplegando app-a a la nube A (simulado)"
-          elif [[ "${{ matrix.app }}" == "app-b" ]]; then
+          elif [[ "${{ matrix.app }}" == "nx-gha-affected-deploy/app-b" ]]; then
             echo "🌐 Ambiente de despliegue: $DEPLOY_ENV_APP_B"
             echo "📦 Desplegando app-b a la nube B (simulado)"
           else
