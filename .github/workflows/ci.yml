@@ -1,0 +1,146 @@
+name: CI - Affected Only Deploy
+
+# 🚀 Ejecuta este workflow solo cuando haya push a la rama main
+on:
+  push:
+    branches:
+      - main
+
+# 🔐 Permisos mínimos requeridos
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  # 🧱 Job inicial que instala las dependencias
+  install:
+    name: Install Dependencies
+    runs-on: ubuntu-latest
+
+    steps:
+      # 📥 Clona el repositorio completo (historial necesario para Nx Affected)
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # ⚙️ Configura Node.js y usa caché para node_modules
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      # 📦 Instala las dependencias con npm
+      - run: npm ci --legacy-peer-deps
+
+  # 🕵️ Job para detectar qué apps fueron afectadas por los últimos cambios
+  detect-affected:
+    name: Detect Affected Projects
+    runs-on: ubuntu-latest
+    needs: install
+
+    # 👉 Exporta la variable "matrix" como output para usarla en otros jobs
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - run: npm ci --legacy-peer-deps
+
+      # 🔍 Permite que Nx identifique qué proyectos se modificaron
+      - uses: nrwl/nx-set-shas@v4
+
+      - name: Set matrix with affected apps
+        id: set-matrix
+        run: |
+          echo "🧪 Generando lista de apps afectadas..."
+
+          # 📊 Extrae solo los nombres de los proyectos tipo "app"
+          AFFECTED=$(npx nx show projects --affected --type=app --select=name | jq -R -s -c 'split("\n") | map(select(. != ""))')
+
+          echo "MATRIX CONTENT: $AFFECTED"
+
+          # 💡 Esta variable se usará en los jobs siguientes como matriz
+          echo "matrix=$AFFECTED" >> $GITHUB_OUTPUT
+
+  # 🏗️ Job para construir solo las apps afectadas
+  build:
+    name: Build Affected Apps
+    runs-on: ubuntu-latest
+    needs: detect-affected
+
+    strategy:
+      # 🧬 Matriz de ejecución por cada app afectada
+      matrix:
+        app: ${{ fromJson(needs.detect-affected.outputs.matrix) }}
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - run: npm ci --legacy-peer-deps
+
+      - name: Build app
+        run: |
+          echo "🔧 Construyendo app afectada: ${{ matrix.app }}"
+          npx nx run ${{ matrix.app }}:build
+
+  # 🚀 Job para desplegar las apps afectadas (si las hay)
+  deploy:
+    name: Deploy Affected Apps
+    runs-on: ubuntu-latest
+    needs: detect-affected
+
+    # ❗️ Previene error si la matriz está vacía
+    if: needs.detect-affected.outputs.matrix != '[]'
+
+    strategy:
+      # 🧬 Matriz de ejecución por cada app afectada
+      matrix:
+        app: ${{ fromJson(needs.detect-affected.outputs.matrix) }}
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - run: npm ci --legacy-peer-deps
+
+      - name: Deploy app
+        env:
+          # 🌍 Variables de entorno simuladas por app (mock de ambientes reales)
+          DEPLOY_ENV_APP_A: nube-a.example.com
+          DEPLOY_ENV_APP_B: nube-b.example.net
+        run: |
+          echo "🚀 Simulando despliegue para: ${{ matrix.app }}"
+
+          # 🧠 Lógica condicional para apps específicas
+          if [[ "${{ matrix.app }}" == "app-a" ]]; then
+            echo "🌐 Ambiente de despliegue: $DEPLOY_ENV_APP_A"
+            echo "📦 Desplegando app-a a la nube A (simulado)"
+          elif [[ "${{ matrix.app }}" == "app-b" ]]; then
+            echo "🌐 Ambiente de despliegue: $DEPLOY_ENV_APP_B"
+            echo "📦 Desplegando app-b a la nube B (simulado)"
+          else
+            echo "⚠️ No hay despliegue definido para: ${{ matrix.app }}"
+          fi

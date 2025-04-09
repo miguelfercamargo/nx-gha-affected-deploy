@@ -1,0 +1,46 @@
+name: PR - Affected Build Check
+
+# 🔁 Este workflow se ejecuta cuando se abre o actualiza un pull request
+on:
+  pull_request:
+
+# 🔐 Permisos mínimos requeridos
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  # 🧱 Job que instala las dependencias y construye lo afectado
+  affected-build:
+    name: Build Affected Projects
+    runs-on: ubuntu-latest
+
+    steps:
+      # 📥 Clona el repositorio con todo el historial para que Nx compare correctamente
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # ⚙️ Configura Node.js y activa la caché de dependencias
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      # 📦 Instala dependencias
+      - run: npm ci --legacy-peer-deps
+
+      # 📌 Establece los SHAs base y head para comparar cambios (obligatorio en PRs)
+      - uses: nrwl/nx-set-shas@v4
+
+      # 🕵️ Muestra cuáles apps fueron afectadas (muy útil en PRs para saber qué toca)
+      - name: Show affected apps
+        run: |
+          echo "🔍 Detectando apps afectadas por este PR..."
+          npx nx show projects --affected --type=app --select=name
+
+      # 🛠️ Ejecuta el build solo de las apps afectadas
+      - name: Build affected apps
+        run: |
+          echo "🏗️ Compilando solo lo que cambió..."
+          npx nx affected -t build
