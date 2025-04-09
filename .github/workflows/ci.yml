@@ -103,7 +103,7 @@ jobs:
   deploy:
     name: Deploy Affected Apps
     runs-on: ubuntu-latest
-    needs: detect-affected
+    needs: [build]
 
     # ❗️ Previene error si la matriz está vacía
     if: needs.detect-affected.outputs.matrix != '[]'
