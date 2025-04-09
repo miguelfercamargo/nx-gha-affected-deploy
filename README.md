@@ -1,82 +1,98 @@
-# NxGhaAffectedDeploy
+# 🚀 Nx + GitHub Actions - Monorepo con despliegue inteligente
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+Este proyecto es un **ejercicio técnico de demostración** que muestra cómo usar **Nx Monorepo** con **GitHub Actions** para detectar y desplegar únicamente los proyectos afectados por un cambio.
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is almost ready ✨.
+> 🔧 Construido con `Node.js v20`, `Nx v20`, `Express`, y herramientas modernas de automatización.
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/nx-api/node?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+---
 
-## Finish your CI setup
+## 🎯 Objetivo
 
-[Click here to finish setting up your workspace!](https://cloud.nx.app/connect/wWDflUSLwv)
+Explorar cómo `Nx` puede optimizar flujos de integración continua al combinarse con `GitHub Actions`, permitiendo que los pipelines:
 
+1. Detecten automáticamente qué apps se modificaron.
+2. Ejecuten `build`, `test`, `lint` y `deploy` **solo en esas apps**.
+3. Corra cada app afectada en jobs paralelos.
+4. Permita separar despliegues en diferentes ambientes según el proyecto.
 
-## Run tasks
+---
 
-To run the dev server for your app, use:
+## 🧪 Stack usado
 
-```sh
-npx nx serve app-a
+<div align="left">
+
+<img src="https://img.shields.io/badge/Node.js-20.x-green?logo=node.js&logoColor=white" alt="Node.js Badge"/>
+<img src="https://img.shields.io/badge/Nx-20.7.2-blue?logo=nx&logoColor=white" alt="Nx Badge"/>
+<img src="https://img.shields.io/badge/TypeScript-5.7-blue?logo=typescript&logoColor=white" alt="TypeScript Badge"/>
+<img src="https://img.shields.io/badge/Express.js-%23404d59.svg?logo=express&logoColor=white" alt="Express Badge"/>
+<img src="https://img.shields.io/badge/GitHub%20Actions-CI%2FCD-black?logo=githubactions&logoColor=white" alt="GitHub Actions Badge"/>
+<img src="https://img.shields.io/badge/Monorepo-Nx%20workspace-orange?logo=npm&logoColor=white" alt="Monorepo Badge"/>
+
+</div>
+
+---
+
+## 📦 Estructura del repositorio
+
+```bash
+.
+├── apps
+│   ├── app-a        # API Express con uso de shared
+│   ├── app-b        # Otra API Express que también depende de shared
+├── libs
+│   └── shared       # Librería compartida entre app-a y app-b
+├── .github
+│   └── workflows    # CI con GitHub Actions usando Nx Affected
+├── nx.json
+├── package.json
+└── README.md
 ```
 
-To create a production bundle:
+---
 
-```sh
-npx nx build app-a
+## 🚀 Scripts disponibles
+
+| Script            | Descripción                                               |
+|-------------------|-----------------------------------------------------------|
+| `build`           | Construye solo las apps afectadas                         |
+| `serve`           | Ejecuta app-a y app-b en paralelo                         |
+| `test`            | Ejecuta tests solo de las apps afectadas                  |
+| `lint`            | Ejecuta lint solo en los proyectos afectados              |
+| `format`          | Aplica formato a todo el monorepo                         |
+| `format:check`    | Verifica si el código está correctamente formateado       |
+| `graph`           | Muestra el grafo de dependencias del monorepo             |
+| `affected:apps`   | Muestra qué apps fueron modificadas                       |
+
+---
+
+## ⚙️ Cómo clonar y correr
+
+```bash
+git clone https://github.com/tu-usuario/nx-gha-affected-deploy.git
+cd nx-gha-affected-deploy
+npm install
+npm run serve
 ```
 
-To see all available targets to run for a project, run:
+---
 
-```sh
-npx nx show project app-a
-```
+## 🧪 Cómo probar los flujos CI/CD
 
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
+Puedes crear ramas como:
 
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+- `feature/app-a-change` → afecta solo `app-a`
+- `feature/app-b-change` → afecta solo `app-b`
+- `feature/shared-change` → afecta ambas apps
 
-## Add new projects
+> Al abrir un Pull Request, verás que **solo se ejecutan acciones sobre los proyectos afectados**.
 
-While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
+---
 
-Use the plugin's generator to create new projects.
+## 📚 Recursos adicionales
 
-To generate a new application, use:
+- 📘 Documentación oficial de Nx: [https://nx.dev](https://nx.dev)
+- 📄 Explicación de Nx Affected: [https://nx.dev/nx-api/nx/documents/affected](https://nx.dev/nx-api/nx/documents/affected)
+- ⚙️ Guía sobre monorepos con Nx: [https://nx.dev/getting-started/intro](https://nx.dev/getting-started/intro)
+- 📂 Documentación sobre plugins y generadores: [https://nx.dev/nx-plugin](https://nx.dev/nx-plugin)
 
-```sh
-npx nx g @nx/node:app demo
-```
-
-To generate a new library, use:
-
-```sh
-npx nx g @nx/node:lib mylib
-```
-
-You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
-
-[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Install Nx Console
-
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
-
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Useful links
-
-Learn more:
-
-- [Learn more about this workspace setup](https://nx.dev/nx-api/node?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-And join the Nx community:
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+---
